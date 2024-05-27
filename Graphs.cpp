@@ -5,12 +5,11 @@ using ln = long long int;
 using Graph = ln**;
 
 // USUNĄĆ ZBĘDNE METODY W LIST
+// 1,2,3,7,8
 
-
-inline ln currentNum(ln& n) {
+ln currentNum(ln& n) {
     return (n - 1 >= 0 ? n - 1 : n);
 }
-
 
 void DFS(Graph& gr, bool* visited, const ln& start, ln* degrees) {
     List stack;
@@ -74,7 +73,6 @@ bool isBipartite(const Graph& gr, ln& size, ln* degrees) {
     return true;
 }
 
-
 ln countComponents(Graph& gr, ln size, ln* degrees) {
     ln components = 0;
     bool* visited = new bool[size]();
@@ -89,79 +87,74 @@ ln countComponents(Graph& gr, ln size, ln* degrees) {
     return components;
 }
 
-void merge(ln* arr, const ln& left, const ln& mid, const ln& right) {
+void merge(ln* degrees, ln* order, const ln& left, const ln& mid, const ln& right) {
     ln n1 = mid - left + 1;
     ln n2 = right - mid;
 
     ln* L = new ln[n1];
     ln* R = new ln[n2];
+    ln* LOrder = new ln[n1];
+    ln* ROrder = new ln[n2];
 
-    // Kopiowanie danych do tymczasowych tablic L[] i R[]
-    for (ln i = 0; i < n1; ++i)
-        L[i] = arr[left + i];
-    for (ln j = 0; j < n2; ++j)
-        R[j] = arr[mid + 1 + j];
+    for (ln i = 0; i < n1; ++i) {
+        L[i] = degrees[left + i];
+        LOrder[i] = order[left + i];
+    }
+    for (ln j = 0; j < n2; ++j) {
+        R[j] = degrees[mid + 1 + j];
+        ROrder[j] = order[mid + 1 + j];
+    }
 
-    ln i = 0; // Początkowy indeks pierwszej podtablicy
-    ln j = 0; // Początkowy indeks drugiej podtablicy
-    ln k = left; // Początkowy indeks scalonej tablicy
+    ln i = 0, j = 0, k = left;
     while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
+        if (L[i] >= R[j]) {
+            degrees[k] = L[i];
+            order[k] = LOrder[i];
             ++i;
         }
         else {
-            arr[k] = R[j];
+            degrees[k] = R[j];
+            order[k] = ROrder[j];
             ++j;
         }
         ++k;
     }
 
     while (i < n1) {
-        arr[k] = L[i];
+        degrees[k] = L[i];
+        order[k] = LOrder[i];
         ++i;
         ++k;
     }
 
     while (j < n2) {
-        arr[k] = R[j];
+        degrees[k] = R[j];
+        order[k] = ROrder[j];
         ++j;
         ++k;
     }
 
     delete[] L;
     delete[] R;
+    delete[] LOrder;
+    delete[] ROrder;
 }
 
-void mergeSort(ln* arr, const ln& left, const ln& right) {
+void mergeSort(ln* degrees, ln* order, const ln& left, const ln& right) {
     if (left < right) {
         ln mid = left + (right - left) / 2;
-
-        mergeSort(arr, left, mid);
-        mergeSort(arr, mid + 1, right);
-
-        merge(arr, left, mid, right);
+        mergeSort(degrees, order, left, mid);
+        mergeSort(degrees, order, mid + 1, right);
+        merge(degrees, order, left, mid, right);
     }
 }
 
-void greedyColoring(Graph& gr, ln* result, const ln& method, const ln& V, ln* degrees) {
-    ln* order = new ln[V];
-    for (ln i = 0; i < V; ++i) {
-        order[i] = i;
-    }
-    
+void greedyColoring(Graph& gr, ln* order, ln* result, const ln& method, const ln& V, ln* degrees) {
     for (ln i = 0; i < V; ++i) {
         result[i] = -1;
     }
 
-    if (method == 1) {  // LF method
-        //sort(order.begin(), order.end(), [&gr](ln a, ln b) {
-        //    if (gr[a].size() == gr[b].size()) return a < b;
-        //    return gr[a].size() > gr[b].size();
-        //    });
-    }
     if (method != 2) {  // Default method
-
         result[order[0]] = 0;  // Assign the first color to the first vertex
 
         // A temporary array to store the available colors. False value means color is available.
@@ -202,7 +195,34 @@ void greedyColoring(Graph& gr, ln* result, const ln& method, const ln& V, ln* de
         }
         delete[] available;
     }
-    delete[] order;
+}
+
+
+void DFSCountC4(const Graph& gr, const ln* degrees, const ln& start, const ln& current, const ln& depth, ln& count, const ln& parent) {
+    if (depth == 4) {
+        if (current == start) {
+            ++count;
+        }
+        return;
+    }
+    for (ln x = 0; x < degrees[current]; ++x) {
+        if (degrees[current] == 0 || gr[current][0] == 0) continue;
+        ln temp = currentNum(gr[current][x]);
+        if (temp != parent) {
+            DFSCountC4(gr, degrees, start, temp, depth + 1, count, current);
+        }
+    }
+}
+
+ln countC4Subgraphs(const Graph& gr, const ln* degrees, const ln& V) {
+    ln count = 0;
+
+    for (ln start = 0; start < V; ++start) {
+        if (degrees[start] == 0 || gr[start][0] == 0) continue;
+        DFSCountC4(gr, degrees, start, start, 0, count, -1);
+    }
+
+    return count / 8; // Each C4 cycle is counted 8 times (4 vertices and 2 directions)
 }
 
 int main()
@@ -217,9 +237,13 @@ int main()
 
         ln* degrees = new ln[edge_numbers];
         ln* degrees_for_sort = new ln[edge_numbers];
+        ln* order = new ln[edge_numbers];
+        ln* order_for_sort = new ln[edge_numbers];
         ln degrees_count = 0;
         ln degrees_sort_count = 0;
         for (ln j = 0; j < edge_numbers; ++j) {
+            order[j] = j;
+            order_for_sort[j] = j;
             ln neighbors;
             cin >> neighbors;
             edges += neighbors;
@@ -235,8 +259,8 @@ int main()
         }
 
         // 1. DEGREE
-        mergeSort(degrees_for_sort, 0, edge_numbers - 1);
-        for (ln k = edge_numbers - 1; k >= 0; --k) {
+        mergeSort(degrees_for_sort, order_for_sort, 0, edge_numbers - 1);
+        for (ln k = 0; k < edge_numbers; ++k) {
             cout << degrees_for_sort[k] << " ";
         }
         cout << endl;
@@ -251,7 +275,7 @@ int main()
         cout << "?" << endl;
         // 6a.
         ln* result = new ln[edge_numbers];
-        greedyColoring(gr, result, 0, edge_numbers, degrees);
+        greedyColoring(gr, order, result, 0, edge_numbers, degrees);
         // PRINT COLORING RESULT
         for (ln u = 0; u < edge_numbers; ++u) {
             cout << result[u] + 1 << " ";
@@ -259,11 +283,16 @@ int main()
         cout << endl;
 
         // 6b.
-        cout << "?" << endl;
+        greedyColoring(gr, order_for_sort, result, 0, edge_numbers, degrees);
+        // PRINT COLORING RESULT
+        for (ln u = 0; u < edge_numbers; ++u) {
+            cout << result[u] + 1 << " ";
+        }
+        cout << endl;
         // 6c.
         cout << "?" << endl;
         // 7.
-        cout << "?" << endl;
+        cout << countC4Subgraphs(gr, degrees, edge_numbers) << endl;
 
         // 8. liczba krawędzi dopełnienia grafu 
         cout << (edge_numbers * (edge_numbers - 1) / 2) - edges / 2 << endl;
@@ -271,6 +300,8 @@ int main()
         cout << "\n\n";
 
         delete[] result;
+        delete[] order;
+        delete[] order_for_sort;
         delete[] degrees;
         delete[] degrees_for_sort;
         for (ln x = 0; x < edge_numbers; ++x) {

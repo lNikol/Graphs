@@ -11,56 +11,45 @@ ln currentNum(ln& n) {
     return (n - 1 >= 0 ? n - 1 : n);
 }
 
-void DFS(Graph& gr, bool* visited, const ln& start, ln* degrees, const ln& size) {
-    ln* stack = new ln[size];
-    bool* positions = new bool[size]();
-    ln top = -1;
-
-    stack[++top] = start;
-
-    while (top >= 0) {
-        ln node = stack[top--];
-        if (!visited[node]) {
-            visited[node] = true;
-            for (ln x = 0; x < degrees[node]; ++x) {
-                ln temp = gr[node][x];
-                if (!visited[temp] && !positions[temp]) {
-                    stack[++top] = temp;
-                    positions[temp] = true;
+void DFS(Graph& gr, bool* visited, const ln& start, ln* degrees) {
+    List stack;
+    stack.push_back(start);
+    while (stack.begin() != nullptr) {
+        Node* node = stack.begin();
+        if (!visited[node->val]) {
+            visited[node->val] = true;
+            for (ln x = 0; x < degrees[node->val]; ++x) {
+                ln temp = gr[node->val][x];
+                if (!visited[temp]) {
+                    stack.push_back(temp);
                 }
             }
         }
+        stack.deleteFirst();
     }
-
-    delete[] positions;
-    delete[] stack;
 }
 
-
-bool colorDFS(const Graph& gr, ln* color, const ln& start, ln* degrees, const ln& size) {
-    ln* stack = new ln[size];
-    ln top = -1;
-
-    stack[++top] = start;
+bool colorDFS(const Graph& gr, ln* color, const ln& start, ln* degrees) {
+    List s;
+    s.push_back(start);
     color[start] = 0;  // Start coloring with 0
 
-    while (top >= 0) {
-        ln node = stack[top--];
-        for (ln x = 0; x < degrees[node]; ++x) {
-            ln temp = gr[node][x];
+    while (s.begin() != nullptr) {
+        Node* node = s.begin();
+
+        for (ln x = 0; x < degrees[node->val]; ++x) {
+            ln temp = gr[node->val][x];
             if (color[temp] == -1) {  // If not colored
-                color[temp] = 1 - color[node];  // Color with opposite color
-                stack[++top] = temp;
+                color[temp] = 1 - color[node->val];  // Color with opposite color
+                s.push_back(temp);
             }
-            else if (color[temp] == color[node]) {
+            else if (color[temp] == color[node->val]) {
                 // If the neighbor has the same color, the graph is not bipartite
-                delete[] stack;
                 return false;
             }
         }
+        s.deleteFirst();
     }
-
-    delete[] stack;
     return true;
 }
 
@@ -71,7 +60,7 @@ bool isBipartite(const Graph& gr, const ln& size, ln* degrees) {
     }
     for (ln start = 0; start < size; ++start) {
         if (color[start] == -1) {  // Not yet colored
-            if (!colorDFS(gr, color, start, degrees, size)) {
+            if (!colorDFS(gr, color, start, degrees)) {
                 delete[] color;
                 return false;
             }
@@ -87,7 +76,7 @@ ln countComponents(Graph& gr, const ln& size, ln* degrees) {
 
     for (ln i = 0; i < size; ++i) {
         if (!visited[i]) {
-            DFS(gr, visited, i, degrees, size);
+            DFS(gr, visited, i, degrees);
             ++components;
         }
     }
@@ -207,7 +196,6 @@ void greedyColoring(Graph& gr, ln* order, ln* result, const ln& method, const ln
 
 ln countC4Subgraphs(const Graph& gr, const ln* degrees, const ln& V) {
     ln count = 0;
-
     for (ln u = 0; u < V; ++u) {
         for (ln i = 0; i < degrees[u]; ++i) {
             // u - wierzchołek
@@ -216,23 +204,23 @@ ln countC4Subgraphs(const Graph& gr, const ln* degrees, const ln& V) {
             for (ln j = i + 1; j < degrees[u]; ++j) {
                 // w - drugi sąsiad wierzchołka u
                 ln w = gr[u][j];
-                // sprawdzenie wspólnych sąsiadów wierzchołków v i w
-                for (ln k = 0; k < degrees[v]; ++k) {
-                    // x - sąsiad v
-                    ln x = gr[v][k];
-                    if (x != u) {
-                        for (ln l = 0; l < degrees[w]; ++l) {
-                            // l - sąsiad w
-                            if (gr[w][l] == x) {
-                                ++count;
-                            }
-                        }
+                bool* neighbor_exists = new bool[V]();
+                for (ln l = 0; l < degrees[w]; ++l) {
+                    ln neighbor = gr[w][l];
+                    if (neighbor != u) {
+                        neighbor_exists[neighbor] = true;
                     }
                 }
+                for (ln k = 0; k < degrees[v]; ++k) {
+                    ln neighbor = gr[v][k];
+                    if (neighbor != u && neighbor_exists[neighbor]) {
+                        ++count;
+                    }
+                }
+                delete[] neighbor_exists;
             }
         }
     }
-
     return count / 4; // Each C4 cycle is counted 4 times
 }
 

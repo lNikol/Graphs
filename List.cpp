@@ -18,13 +18,14 @@ void List::push_back(const long long int& t) {
 	last->next = new Node(t);
 	last->next->prev = last;
 	last = last->next;
+	++size;
 }
 
 void List::pop_back() {
 	if (first == nullptr) {
 		return;
 	}
-
+	--size;
 	// usuwam pierwszy (on jest ostatnim) element z listy
 	if (first->next == nullptr) {
 		delete first;
@@ -45,7 +46,7 @@ void List::deleteFirst() {
 	if (first == nullptr) {
 		return;
 	}
-
+	--size;
 	Node* tmp = first;
 	first = first->next;
 
@@ -60,7 +61,9 @@ void List::deleteFirst() {
 	delete tmp;
 }
 
-
+long long int List::getSize() {
+	return size;
+}
 Node* List::begin() {
 	return first;
 }
@@ -83,4 +86,5 @@ List::~List() {
 	}
 	first = nullptr;
 	last = nullptr;
+	size = 0;
 }

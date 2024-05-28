@@ -3,7 +3,9 @@
 class List {
 	Node* first = nullptr;
 	Node* last = nullptr;
+	long long int size = 0;
 public:
+	long long int getSize();
 	List();
 	Node* begin();
 	Node* end();

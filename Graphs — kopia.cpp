@@ -5,6 +5,28 @@ using ln = long long int;
 using ui = unsigned int;
 using Graph = ui**;
 
+// USUNĄĆ ZBĘDNE METODY W LIST
+// 1,2,3,7,8
+
+
+void DFS(Graph& gr, bool* visited, const ui& start, ui* degrees) {
+    List stack;
+    stack.push_back(start);
+    while (stack.begin() != nullptr) {
+        Node* node = stack.begin();
+        if (!visited[node->val]) {
+            visited[node->val] = true;
+            for (ui x = 0; x < degrees[node->val]; ++x) {
+                ui temp = gr[node->val][x];
+                if (!visited[temp]) {
+                    stack.push_back(temp);
+                }
+            }
+        }
+        stack.deleteFirst();
+    }
+}
+
 bool colorDFS(const Graph& gr, char* color, const ui& start, ui* degrees) {
     List s;
     s.push_back(start);
@@ -46,40 +68,16 @@ bool isBipartite(const Graph& gr, const ln& size, ui* degrees) {
     return true;
 }
 
-void DFS(Graph& gr, bool* visited, const ui& start, ui* degrees, ui& component_size, ui* component) {
-    List stack;
-    stack.push_back(start);
-
-    while (stack.begin() != nullptr) {
-        Node* node = stack.begin();
-        if (!visited[node->val]) {
-            visited[node->val] = true;
-            component[node->val] = start;  // oznaczam wierzchołek jako należący do składowej start
-            ++component_size;
-            for (ui x = 0; x < degrees[node->val]; ++x) {
-                ui temp = gr[node->val][x];
-                if (!visited[temp]) {
-                    stack.push_back(temp);
-                }
-            }
-        }
-        stack.deleteFirst();
-    }
-}
-
-ui countComponents(Graph& gr, const ln& size, ui* degrees, ui* component_sizes, ui* component) {
+ui countComponents(Graph& gr, const ln& size, ui* degrees) {
     ui components = 0;
     bool* visited = new bool[size]();
 
     for (ui i = 0; i < size; ++i) {
         if (!visited[i]) {
-            ui component_size = 0;
-            DFS(gr, visited, i, degrees, component_size, component);
-            component_sizes[i] = component_size;
+            DFS(gr, visited, i, degrees);
             ++components;
         }
     }
-
     delete[] visited;
     return components;
 }
@@ -147,53 +145,6 @@ void mergeSort(ui* degrees, ui* order, const ln& left, const ln& right) {
     }
 }
 
-ui bfs(const Graph& gr, const ui* degrees, const ui& start, const ln& size, const ui& component_size) {
-    char* distance = new char[size + 1]();
-    ui* queue = new ui[size + 1];
-    ui front = 0, back = 0;
-
-    queue[back++] = start;
-    distance[start] = 1;
-    ui max_distance = 0;
-    // back już = 1 : Startowy wierzchołek jest już w komponencie
-    // to samo co i
-    // ln nodes_in_component = 1; // Startowy wierzchołek jest już w komponencie
-
-    while (front != back) {
-        ui node = queue[front++];
-        for (ui i = 0; i < degrees[node]; ++i) {
-            ui neighbor = gr[node][i];
-            if (distance[neighbor] == 0) {
-                distance[neighbor] = distance[node] + 1;
-                queue[back++] = neighbor;
-                if (distance[neighbor] > max_distance) {
-                    max_distance = distance[neighbor];
-                }
-                // jeśli dodałem wszystkie wierzchołki składowej spójności, mogę przerwać
-                if (back == component_size) {
-                    delete[] queue;
-                    delete[] distance;
-                    return --max_distance;
-                }
-            }
-        }
-    }
-    delete[] queue;
-    delete[] distance;
-    return --max_distance;
-}
-
-void eccentricities(const Graph& gr, const ui* degrees, const ln& size, const ui* component, const ui* component_sizes) {
-    for (ui i = 0; i < size; ++i) {
-        if (component_sizes[component[i]] == 1) {
-            printf("0 ");
-            continue;
-        }
-        printf("%u ", bfs(gr, degrees, i, size, component_sizes[component[i]]));
-    }
-    printf("\n");
-}
-
 void greedyColoring(Graph& gr, ui* order, ui* result, const char& method, const ln& V, ui* degrees) {
     for (ui i = 0; i < V; ++i) {
         result[i] = 0;
@@ -242,7 +193,8 @@ void greedyColoring(Graph& gr, ui* order, ui* result, const char& method, const 
     }
 }
 
-// dodać konetarze w C4 i innych fragmentach kodu, usunąć stare i zbędne komentarze
+// dodać konetarze w C4 i innych fragmentach kodu
+// czyli mam pętlo po pierwszym sąsiedzie, w środku po drugim, i potem zliczam powtórki w ich listach sąsiadów
 ln countC4Subgraphs(const Graph& gr, const ui* degrees, const ln& V) {
     ln count = 0;
 
@@ -258,14 +210,14 @@ ln countC4Subgraphs(const Graph& gr, const ui* degrees, const ln& V) {
             // v - pierwszy sąsiad u
             ui v = gr[u][i];
             if (degrees[v] <= 1) {
-                continue;
+                continue; 
             }
 
             for (ui j = i + 1; j < degrees[u]; ++j) {
                 // w - drugi sąsiad u
                 ui w = gr[u][j];
                 if (degrees[w] <= 1) {
-                    continue;
+                    continue; 
                 }
                 ui t1 = 0, t2 = 0;
                 while (t1 < degrees[v] && t2 < degrees[w]) {
@@ -286,7 +238,7 @@ ln countC4Subgraphs(const Graph& gr, const ui* degrees, const ln& V) {
         count += tempCount;
     }
 
-    return count / 2; // Każdy cykl C4 jest liczony 4 razy
+    return count/2; // Każdy cykl C4 jest liczony 4 razy
 }
 
 int main()
@@ -326,21 +278,14 @@ int main()
         }
         printf("\n");
 
-        // Tablica przechowująca rozmiary składowych spójności
-        ui* component_sizes = new ui[edge_numbers + 1];
-        ui* component = new ui[edge_numbers + 1];
-
         // 2. COMPONENTS (Liczba składowych spójności)
-        // Wyznaczam składowe spójności i ich rozmiary
-        printf("%u\n", countComponents(gr, edge_numbers, degrees, component_sizes, component));
+        printf("%u\n", countComponents(gr, edge_numbers, degrees));
         // 3.
         printf("%s\n", isBipartite(gr, edge_numbers, degrees) ? "T" : "F");
-
-        // 4. Acentryczność wierzchołków
-        eccentricities(gr, degrees, edge_numbers, component, component_sizes);
-        // 5.
+        // 4.
         printf("?\n");
-        // 6a.
+        // 5.
+        printf("?\n");        // 6a.
         ui* result = new ui[edge_numbers];
         greedyColoring(gr, order, result, 0, edge_numbers, degrees);
         // PRINT COLORING RESULT
@@ -351,8 +296,7 @@ int main()
 
         // 6b.
         greedyColoring(gr, order_for_sort, result, 0, edge_numbers, degrees);
-        
-        // print colloring result
+        // PRINT COLORING RESULT
         for (ui u = 0; u < edge_numbers; ++u) {
             printf("%u ", result[u]);
         }
@@ -361,21 +305,18 @@ int main()
         // 6c.
         printf("?\n");
         // 7.
-        printf("?\n");
-        //printf("%lld\n", countC4Subgraphs(gr, degrees, edge_numbers));
+        printf("%lld\n", countC4Subgraphs(gr, degrees, edge_numbers));
         // 8. liczba krawędzi dopełnienia grafu 
         printf("%lld\n", (edge_numbers * (edge_numbers - 1) / 2) - edges / 2);
 
-        for (ui x = 0; x < edge_numbers; ++x) {
-            delete[] gr[x];
-        }
-        delete[] gr;
         delete[] result;
         delete[] order;
         delete[] order_for_sort;
         delete[] degrees;
         delete[] degrees_for_sort;
-        delete[] component;
-        delete[] component_sizes;
+        for (ui x = 0; x < edge_numbers; ++x) {
+            delete[] gr[x];
+        }
+        delete[] gr;
     }
 }

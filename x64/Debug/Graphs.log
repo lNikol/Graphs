@@ -1,4 +1,3 @@
 ﻿  Graphs.cpp
-  List.cpp
-  Generating Code...
+E:\Programming\C++\AiSD\Graphs\Graphs\Graphs.cpp(172,40): warning C4018: '>': signed/unsigned mismatch
   Graphs.vcxproj -> E:\Programming\C++\AiSD\Graphs\x64\Debug\Graphs.exe

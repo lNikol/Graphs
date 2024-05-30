@@ -196,32 +196,56 @@ void greedyColoring(Graph& gr, ln* order, ln* result, const ln& method, const ln
 
 ln countC4Subgraphs(const Graph& gr, const ln* degrees, const ln& V) {
     ln count = 0;
+    bool* neighbor_exists = new bool[V](); // Tablica przechowująca informacje o istnieniu sąsiadów
+
     for (ln u = 0; u < V; ++u) {
+        if (degrees[u] <= 1) {
+            continue;
+        }
+
+        // Iteracja po sąsiadach u
         for (ln i = 0; i < degrees[u]; ++i) {
-            // u - wierzchołek
-            // v - pierwszy sąsiad wierzchołka u
             ln v = gr[u][i];
-            for (ln j = i + 1; j < degrees[u]; ++j) {
-                // w - drugi sąsiad wierzchołka u
-                ln w = gr[u][j];
-                bool* neighbor_exists = new bool[V]();
-                for (ln l = 0; l < degrees[w]; ++l) {
-                    ln neighbor = gr[w][l];
-                    if (neighbor != u) {
-                        neighbor_exists[neighbor] = true;
-                    }
+            if (degrees[v] <= 1) { // Pomijamy, jeśli v ma tylko jednego sąsiada
+                continue;
+            }
+
+            // Aktualizacja tablicy neighbor_exists dla sąsiadów u
+            for (ln l = 0; l < degrees[v]; ++l) {
+                ln neighbor = gr[v][l];
+                if (neighbor != u) {
+                    neighbor_exists[neighbor] = true;
                 }
-                for (ln k = 0; k < degrees[v]; ++k) {
-                    ln neighbor = gr[v][k];
+            }
+
+            // Iteracja po sąsiadach v (pomijając u)
+            for (ln j = i + 1; j < degrees[u]; ++j) {
+                ln w = gr[u][j];
+                if (degrees[w] <= 1) { // Pomijamy, jeśli w ma tylko jednego sąsiada
+                    continue;
+                }
+
+                // Sprawdzenie, czy w i v mają wspólnych sąsiadów (oprócz u)
+                for (ln k = 0; k < degrees[w]; ++k) {
+                    ln neighbor = gr[w][k];
                     if (neighbor != u && neighbor_exists[neighbor]) {
                         ++count;
                     }
                 }
-                delete[] neighbor_exists;
+            }
+
+            // Resetowanie tablicy neighbor_exists
+            for (ln l = 0; l < degrees[v]; ++l) {
+                ln neighbor = gr[v][l];
+                if (neighbor != u) {
+                    neighbor_exists[neighbor] = false;
+                }
             }
         }
     }
-    return count / 4; // Each C4 cycle is counted 4 times
+
+    delete[] neighbor_exists; // Zwolnienie zaalokowanej pamięci
+    return count / 4; // Każdy cykl C4 jest liczbą 4 razy
 }
 
 int main()

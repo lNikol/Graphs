@@ -127,13 +127,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Graph.cpp" />
     <ClCompile Include="Graphs.cpp" />
     <ClCompile Include="List.cpp" />
-    <ClCompile Include="Node.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Graph.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="Node.h" />
   </ItemGroup>

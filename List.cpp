@@ -6,7 +6,7 @@ List::List() {
 
 }
 
-void List::push_back(const long long int& t) {
+void List::push_back(const unsigned int& t) {
 	if (first == nullptr) {
 		first = new Node(t);
 		last = first;
@@ -21,26 +21,26 @@ void List::push_back(const long long int& t) {
 	++size;
 }
 
-void List::pop_back() {
-	if (first == nullptr) {
-		return;
-	}
-	--size;
-	// usuwam pierwszy (on jest ostatnim) element z listy
-	if (first->next == nullptr) {
-		delete first;
-		first = nullptr;
-		last = nullptr;
-		return;
-	}
-
-	Node* tmp = last->prev;
-	delete last;
-	last = tmp;
-	if (last != nullptr) {
-		last->next = nullptr;
-	}
-}
+//void List::pop_back() {
+//	if (first == nullptr) {
+//		return;
+//	}
+//	--size;
+//	// usuwam pierwszy (on jest ostatnim) element z listy
+//	if (first->next == nullptr) {
+//		delete first;
+//		first = nullptr;
+//		last = nullptr;
+//		return;
+//	}
+//
+//	Node* tmp = last->prev;
+//	delete last;
+//	last = tmp;
+//	if (last != nullptr) {
+//		last->next = nullptr;
+//	}
+//}
 
 void List::deleteFirst() {
 	if (first == nullptr) {
@@ -61,21 +61,21 @@ void List::deleteFirst() {
 	delete tmp;
 }
 
-long long int List::getSize() {
+unsigned int List::getSize() const {
 	return size;
 }
 Node* List::begin() {
 	return first;
 }
 
-Node* List::end() {
-	if (last == nullptr) {
-		return nullptr;
-	}
-	else {
-		return last;
-	}
-}
+//Node* List::end() {
+//	if (last == nullptr) {
+//		return nullptr;
+//	}
+//	else {
+//		return last;
+//	}
+//}
 
 List::~List() {
 	Node* cur = first;

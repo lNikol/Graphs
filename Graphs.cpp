@@ -2,24 +2,22 @@
 #include "List.h"
 using namespace std;
 using ln = long long int;
-using Graph = ln**;
+using ui = unsigned int;
+using Graph = ui**;
 
 // USUNĄĆ ZBĘDNE METODY W LIST
 // 1,2,3,7,8
 
-ln currentNum(ln& n) {
-    return (n - 1 >= 0 ? n - 1 : n);
-}
 
-void DFS(Graph& gr, bool* visited, const ln& start, ln* degrees) {
+void DFS(Graph& gr, bool* visited, const ui& start, ui* degrees) {
     List stack;
     stack.push_back(start);
     while (stack.begin() != nullptr) {
         Node* node = stack.begin();
         if (!visited[node->val]) {
             visited[node->val] = true;
-            for (ln x = 0; x < degrees[node->val]; ++x) {
-                ln temp = gr[node->val][x];
+            for (ui x = 0; x < degrees[node->val]; ++x) {
+                ui temp = gr[node->val][x];
                 if (!visited[temp]) {
                     stack.push_back(temp);
                 }
@@ -29,7 +27,7 @@ void DFS(Graph& gr, bool* visited, const ln& start, ln* degrees) {
     }
 }
 
-bool colorDFS(const Graph& gr, ln* color, const ln& start, ln* degrees) {
+bool colorDFS(const Graph& gr, char* color, const ui& start, ui* degrees) {
     List s;
     s.push_back(start);
     color[start] = 0;  // Start coloring with 0
@@ -37,8 +35,8 @@ bool colorDFS(const Graph& gr, ln* color, const ln& start, ln* degrees) {
     while (s.begin() != nullptr) {
         Node* node = s.begin();
 
-        for (ln x = 0; x < degrees[node->val]; ++x) {
-            ln temp = gr[node->val][x];
+        for (ui x = 0; x < degrees[node->val]; ++x) {
+            ui temp = gr[node->val][x];
             if (color[temp] == -1) {  // If not colored
                 color[temp] = 1 - color[node->val];  // Color with opposite color
                 s.push_back(temp);
@@ -53,12 +51,12 @@ bool colorDFS(const Graph& gr, ln* color, const ln& start, ln* degrees) {
     return true;
 }
 
-bool isBipartite(const Graph& gr, const ln& size, ln* degrees) {
-    ln* color = new ln[size];  // -1 means uncolored, 0 and 1 are the two colors
-    for (ln x = 0; x < size; ++x) {
+bool isBipartite(const Graph& gr, const ln& size, ui* degrees) {
+    char* color = new char[size];  // -1 means uncolored, 0 and 1 are the two colors
+    for (ui x = 0; x < size; ++x) {
         color[x] = -1;
     }
-    for (ln start = 0; start < size; ++start) {
+    for (ui start = 0; start < size; ++start) {
         if (color[start] == -1) {  // Not yet colored
             if (!colorDFS(gr, color, start, degrees)) {
                 delete[] color;
@@ -70,11 +68,11 @@ bool isBipartite(const Graph& gr, const ln& size, ln* degrees) {
     return true;
 }
 
-ln countComponents(Graph& gr, const ln& size, ln* degrees) {
-    ln components = 0;
+ui countComponents(Graph& gr, const ln& size, ui* degrees) {
+    ui components = 0;
     bool* visited = new bool[size]();
 
-    for (ln i = 0; i < size; ++i) {
+    for (ui i = 0; i < size; ++i) {
         if (!visited[i]) {
             DFS(gr, visited, i, degrees);
             ++components;
@@ -84,25 +82,26 @@ ln countComponents(Graph& gr, const ln& size, ln* degrees) {
     return components;
 }
 
-void merge(ln* degrees, ln* order, const ln& left, const ln& mid, const ln& right) {
+void merge(ui* degrees, ui* order, const ln& left, const ln& mid, const ln& right) {
     ln n1 = mid - left + 1;
     ln n2 = right - mid;
 
-    ln* L = new ln[n1];
-    ln* R = new ln[n2];
-    ln* LOrder = new ln[n1];
-    ln* ROrder = new ln[n2];
+    ui* L = new ui[n1];
+    ui* R = new ui[n2];
+    ui* LOrder = new ui[n1];
+    ui* ROrder = new ui[n2];
 
-    for (ln i = 0; i < n1; ++i) {
+    for (ui i = 0; i < n1; ++i) {
         L[i] = degrees[left + i];
         LOrder[i] = order[left + i];
     }
-    for (ln j = 0; j < n2; ++j) {
+    for (ui j = 0; j < n2; ++j) {
         R[j] = degrees[mid + 1 + j];
         ROrder[j] = order[mid + 1 + j];
     }
 
-    ln i = 0, j = 0, k = left;
+    ui i = 0, j = 0;
+    ln k = left;
     while (i < n1 && j < n2) {
         if (L[i] >= R[j]) {
             degrees[k] = L[i];
@@ -137,7 +136,7 @@ void merge(ln* degrees, ln* order, const ln& left, const ln& mid, const ln& righ
     delete[] ROrder;
 }
 
-void mergeSort(ln* degrees, ln* order, const ln& left, const ln& right) {
+void mergeSort(ui* degrees, ui* order, const ln& left, const ln& right) {
     if (left < right) {
         ln mid = left + (right - left) / 2;
         mergeSort(degrees, order, left, mid);
@@ -146,34 +145,34 @@ void mergeSort(ln* degrees, ln* order, const ln& left, const ln& right) {
     }
 }
 
-void greedyColoring(Graph& gr, ln* order, ln* result, const ln& method, const ln& V, ln* degrees) {
-    for (ln i = 0; i < V; ++i) {
-        result[i] = -1;
+void greedyColoring(Graph& gr, ui* order, ui* result, const char& method, const ln& V, ui* degrees) {
+    for (ui i = 0; i < V; ++i) {
+        result[i] = 0;
     }
 
     if (method != 2) {  // Default method
-        result[order[0]] = 0;  // Assign the first color to the first vertex
+        result[order[0]] = 1;  // Assign the first color to the first vertex
 
         // A temporary array to store the available colors. False value means color is available.
         bool* available = new bool[V];
-        for (ln x = 0; x < V; ++x) {
+        for (ui x = 0; x < V; ++x) {
             available[x] = true;
         }
 
         // Assign colors to remaining V-1 vertices
-        for (ln i = 1; i < V; ++i) {
-            ln u = order[i];
+        for (ui i = 1; i < V; ++i) {
+            ui u = order[i];
             // Process all adjacent vertices and mark their colors as unavailable
-            for (ln x = 0; x < degrees[u]; ++x) {
-                ln temp = gr[u][x];
-                if (result[temp] != -1) {
+            for (ui x = 0; x < degrees[u]; ++x) {
+                ui temp = gr[u][x];
+                if (result[temp] != 0) {
                     available[result[temp]] = false;
                 }
             }
 
             // Find the first available color
-            ln cr;
-            for (cr = 0; cr < V; ++cr) {
+            ui cr;
+            for (cr = 1; cr < V; ++cr) {
                 if (available[cr]) {
                     break;
                 }
@@ -183,9 +182,9 @@ void greedyColoring(Graph& gr, ln* order, ln* result, const ln& method, const ln
 
             // Reset the values back to true for the next iteration
 
-            for (ln x = 0; x < degrees[u]; ++x) {
-                ln temp = gr[u][x];
-                if (result[temp] != -1) {
+            for (ui x = 0; x < degrees[u]; ++x) {
+                ui temp = gr[u][x];
+                if (result[temp] != 0) {
                     available[result[temp]] = true;
                 }
             }
@@ -194,140 +193,136 @@ void greedyColoring(Graph& gr, ln* order, ln* result, const ln& method, const ln
     }
 }
 
-ln countC4Subgraphs(const Graph& gr, const ln* degrees, const ln& V) {
+// dodać konetarze w C4 i innych fragmentach kodu
+
+ln countC4Subgraphs(const Graph& gr, const ui* degrees, const ln& V) {
     ln count = 0;
     bool* neighbor_exists = new bool[V](); // Tablica przechowująca informacje o istnieniu sąsiadów
 
-    for (ln u = 0; u < V; ++u) {
+    for (ui u = 0; u < V; ++u) {
         if (degrees[u] <= 1) {
             continue;
         }
 
         // Iteracja po sąsiadach u
-        for (ln i = 0; i < degrees[u]; ++i) {
-            ln v = gr[u][i];
-            if (degrees[v] <= 1) { // Pomijamy, jeśli v ma tylko jednego sąsiada
+        for (ui i = 0; i < degrees[u]; ++i) {
+            ui tempCount = 0;
+            ui v = gr[u][i];
+            if (degrees[v] <= 1) {
                 continue;
             }
 
             // Aktualizacja tablicy neighbor_exists dla sąsiadów u
-            for (ln l = 0; l < degrees[v]; ++l) {
-                ln neighbor = gr[v][l];
+            for (ui l = 0; l < degrees[v]; ++l) {
+                ui neighbor = gr[v][l];
                 if (neighbor != u) {
                     neighbor_exists[neighbor] = true;
                 }
             }
 
             // Iteracja po sąsiadach v (pomijając u)
-            for (ln j = i + 1; j < degrees[u]; ++j) {
-                ln w = gr[u][j];
-                if (degrees[w] <= 1) { // Pomijamy, jeśli w ma tylko jednego sąsiada
+            for (ui j = i + 1; j < degrees[u]; ++j) {
+                ui w = gr[u][j];
+                if (degrees[w] <= 1) {
                     continue;
                 }
 
                 // Sprawdzenie, czy w i v mają wspólnych sąsiadów (oprócz u)
-                for (ln k = 0; k < degrees[w]; ++k) {
-                    ln neighbor = gr[w][k];
-                    if (neighbor != u && neighbor_exists[neighbor]) {
-                        ++count;
+                for (ui k = 0; k < degrees[w]; ++k) {
+                    ui neighbor = gr[w][k];
+                    if (neighbor_exists[neighbor]) {
+                        ++tempCount;
                     }
                 }
             }
 
-            // Resetowanie tablicy neighbor_exists
-            for (ln l = 0; l < degrees[v]; ++l) {
-                ln neighbor = gr[v][l];
-                if (neighbor != u) {
-                    neighbor_exists[neighbor] = false;
-                }
+            for (ui l = 0; l < degrees[v]; ++l) {
+                ui neighbor = gr[v][l];
+                neighbor_exists[neighbor] = false;
             }
+            count += tempCount;
         }
     }
 
-    delete[] neighbor_exists; // Zwolnienie zaalokowanej pamięci
-    return count / 4; // Każdy cykl C4 jest liczbą 4 razy
+    delete[] neighbor_exists;
+    return count / 4;
 }
 
 int main()
 {
-    ln graph_numbers;
-    scanf_s("%lld", &graph_numbers);
-    for (ln i = 0; i < graph_numbers; ++i) {
+    unsigned short graph_numbers;
+    scanf_s("%hu", &graph_numbers);
+    for (ui i = 0; i < graph_numbers; ++i) {
         ln edge_numbers;
         ln edges = 0;
         scanf_s("%lld", &edge_numbers);
-        Graph gr = new ln*[edge_numbers];
+        Graph gr = new ui*[edge_numbers];
 
-        ln* degrees = new ln[edge_numbers];
-        ln* degrees_for_sort = new ln[edge_numbers];
-        ln* order = new ln[edge_numbers];
-        ln* order_for_sort = new ln[edge_numbers];
-        ln degrees_count = 0;
-        ln degrees_sort_count = 0;
-        for (ln j = 0; j < edge_numbers; ++j) {
+        ui* degrees = new ui[edge_numbers];
+        ui* degrees_for_sort = new ui[edge_numbers];
+        ui* order = new ui[edge_numbers];
+        ui* order_for_sort = new ui[edge_numbers];
+        for (ui j = 0; j < edge_numbers; ++j) {
             order[j] = j;
             order_for_sort[j] = j;
-            ln neighbors;
-            scanf_s("%lld", &neighbors);
+            ui neighbors;
+            scanf_s("%u", &neighbors);
             edges += neighbors;
-            gr[j] = new ln[neighbors];
-            degrees[degrees_count++] = neighbors;
-            degrees_for_sort[degrees_sort_count++] = neighbors;
-            ln neighbor_count = 0;
-            for (ln k = 0; k < neighbors; ++k) {
-                ln num;
-                scanf_s("%lld", &num);
-                gr[j][neighbor_count++] = currentNum(num);
+            gr[j] = new ui[neighbors];
+            degrees[j] = neighbors;
+            degrees_for_sort[j] = neighbors;
+            for (ui k = 0; k < neighbors; ++k) {
+                ui n;
+                scanf_s("%u", &n);
+                gr[j][k] = n - 1 >= 0 ? n - 1 : n;
             }
         }
 
         // 1. DEGREE
         mergeSort(degrees_for_sort, order_for_sort, 0, edge_numbers - 1);
-        for (ln k = 0; k < edge_numbers; ++k) {
-            printf("%llu ", degrees_for_sort[k]);
+        for (ui k = 0; k < edge_numbers; ++k) {
+            printf("%u ", degrees_for_sort[k]);
         }
         printf("\n");
 
         // 2. COMPONENTS (Liczba składowych spójności)
-        printf("%llu\n", countComponents(gr, edge_numbers, degrees));
+        printf("%u\n", countComponents(gr, edge_numbers, degrees));
         // 3.
         printf("%s\n", isBipartite(gr, edge_numbers, degrees) ? "T" : "F");
         // 4.
         printf("?\n");
         // 5.
         printf("?\n");        // 6a.
-        ln* result = new ln[edge_numbers];
+        ui* result = new ui[edge_numbers];
         greedyColoring(gr, order, result, 0, edge_numbers, degrees);
         // PRINT COLORING RESULT
-        for (ln u = 0; u < edge_numbers; ++u) {
-            printf("%llu ", result[u] + 1);
+        for (ui u = 0; u < edge_numbers; ++u) {
+            printf("%u ", result[u]);
         }
         printf("\n");
 
         // 6b.
         greedyColoring(gr, order_for_sort, result, 0, edge_numbers, degrees);
         // PRINT COLORING RESULT
-        for (ln u = 0; u < edge_numbers; ++u) {
-            printf("%llu ", result[u] + 1);
+        for (ui u = 0; u < edge_numbers; ++u) {
+            printf("%u ", result[u]);
         }
         printf("\n");
 
         // 6c.
         printf("?\n");
         // 7.
-        printf("%llu\n", countC4Subgraphs(gr, degrees, edge_numbers));
+        printf("%lld\n", countC4Subgraphs(gr, degrees, edge_numbers));
         // 8. liczba krawędzi dopełnienia grafu 
-        printf("%llu\n", (edge_numbers * (edge_numbers - 1) / 2) - edges / 2);
-
-        cout << "\n\n";
+        printf("%lld\n", (edge_numbers * (edge_numbers - 1) / 2) - edges / 2);
 
         delete[] result;
         delete[] order;
         delete[] order_for_sort;
         delete[] degrees;
         delete[] degrees_for_sort;
-        for (ln x = 0; x < edge_numbers; ++x) {
-            delete [] gr[x];
+        for (ui x = 0; x < edge_numbers; ++x) {
+            delete[] gr[x];
         }
         delete[] gr;
     }

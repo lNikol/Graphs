@@ -3,14 +3,14 @@
 class List {
 	Node* first = nullptr;
 	Node* last = nullptr;
-	long long int size = 0;
+	unsigned int size = 0;
 public:
-	long long int getSize();
+	unsigned int getSize() const;
 	List();
 	Node* begin();
-	Node* end();
-	void push_back(const long long int& t);
+//	Node* end();
+	void push_back(const unsigned int& t);
 	void deleteFirst();
-	void pop_back();
+//	void pop_back();
 	~List();
 };

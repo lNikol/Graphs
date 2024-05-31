@@ -46,7 +46,7 @@ bool isBipartite(const Graph& gr, const ln& size, ui* degrees) {
     return true;
 }
 
-void DFS(Graph& gr, bool* visited, const ui& start, ui* degrees, ui& component_size, ui* component) {
+void DFS(Graph& gr, bool* visited, const ln& start, ui* degrees, ui& component_size, ui* component) {
     List stack;
     stack.push_back(start);
 
@@ -147,14 +147,14 @@ void mergeSort(ui* degrees, ui* order, const ln& left, const ln& right) {
     }
 }
 
-ui bfs(const Graph& gr, const ui* degrees, const ui& start, const ln& size, const ui& component_size) {
-    char* distance = new char[size + 1]();
+ln bfs(const Graph& gr, const ui* degrees, const ln& start, const ln& size, const ln& component_size) {
+    unsigned short* distance = new unsigned short[size + 1]();
     ui* queue = new ui[size + 1];
     ui front = 0, back = 0;
 
     queue[back++] = start;
     distance[start] = 1;
-    ui max_distance = 0;
+    ln max_distance = 0;
     // back już = 1 : Startowy wierzchołek jest już w komponencie
     // to samo co i
     // ln nodes_in_component = 1; // Startowy wierzchołek jest już w komponencie
@@ -189,7 +189,7 @@ void eccentricities(const Graph& gr, const ui* degrees, const ln& size, const ui
             printf("0 ");
             continue;
         }
-        printf("%u ", bfs(gr, degrees, i, size, component_sizes[component[i]]));
+        printf("%lld ", bfs(gr, degrees, i, size, component_sizes[component[i]]));
     }
     printf("\n");
 }
@@ -361,8 +361,7 @@ int main()
         // 6c.
         printf("?\n");
         // 7.
-        printf("?\n");
-        //printf("%lld\n", countC4Subgraphs(gr, degrees, edge_numbers));
+        printf("%lld\n", countC4Subgraphs(gr, degrees, edge_numbers));
         // 8. liczba krawędzi dopełnienia grafu 
         printf("%lld\n", (edge_numbers * (edge_numbers - 1) / 2) - edges / 2);
 

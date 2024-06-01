@@ -233,47 +233,45 @@ void greedyColoring(Graph& gr, ui* order, ui* result, const char& method, const 
         result[i] = 0;
     }
 
-    if (method != 2) {  // Default method
-        result[order[0]] = 1;  // Assign the first color to the first vertex
+    result[order[0]] = 1;  // Assign the first color to the first vertex
 
-        // A temporary array to store the available colors. False value means color is available.
-        bool* available = new bool[V];
-        for (ui x = 0; x < V; ++x) {
-            available[x] = true;
-        }
-
-        // Assign colors to remaining V-1 vertices
-        for (ui i = 1; i < V; ++i) {
-            ui u = order[i];
-            // Process all adjacent vertices and mark their colors as unavailable
-            for (ui x = 0; x < degrees[u]; ++x) {
-                ui temp = gr[u][x];
-                if (result[temp] != 0) {
-                    available[result[temp]] = false;
-                }
-            }
-
-            // Find the first available color
-            ui cr;
-            for (cr = 1; cr < V; ++cr) {
-                if (available[cr]) {
-                    break;
-                }
-            }
-
-            result[u] = cr;  // Assign the found color to vertex u
-
-            // Reset the values back to true for the next iteration
-
-            for (ui x = 0; x < degrees[u]; ++x) {
-                ui temp = gr[u][x];
-                if (result[temp] != 0) {
-                    available[result[temp]] = true;
-                }
-            }
-        }
-        delete[] available;
+    // A temporary array to store the available colors. False value means color is available.
+    bool* available = new bool[V];
+    for (ui x = 0; x < V; ++x) {
+        available[x] = true;
     }
+
+    // Assign colors to remaining V-1 vertices
+    for (ui i = 1; i < V; ++i) {
+        ui u = order[i];
+        // Process all adjacent vertices and mark their colors as unavailable
+        for (ui x = 0; x < degrees[u]; ++x) {
+            ui temp = gr[u][x];
+            if (result[temp] != 0) {
+                available[result[temp]] = false;
+            }
+        }
+
+        // Find the first available color
+        ui cr;
+        for (cr = 1; cr < V; ++cr) {
+            if (available[cr]) {
+                break;
+            }
+        }
+
+        result[u] = cr;  // Assign the found color to vertex u
+
+        // Reset the values back to true for the next iteration
+
+        for (ui x = 0; x < degrees[u]; ++x) {
+            ui temp = gr[u][x];
+            if (result[temp] != 0) {
+                available[result[temp]] = true;
+            }
+        }
+    }
+    delete[] available;
 }
 
 // dodać konetarze w C4 i innych fragmentach kodu, usunąć stare i zbędne komentarze
@@ -332,7 +330,7 @@ ln countC4Subgraphs(Graph& gr, ui* degrees, const ln& V) {
             ui y = gr[u][j];
             while (y != v) {
                 tempCount += L[y]++;
-                y = gr[u][++j];
+                y = gr[u][++j]; // ustawienie y na kolejnego sąsiada u
             }
         }
 
@@ -344,12 +342,11 @@ ln countC4Subgraphs(Graph& gr, ui* degrees, const ln& V) {
             if (degrees[u] == degrees[v] && u >= v) {
                 continue;
             }
-            
             ui j = 0;
             ui y = gr[u][j];
             while (y != v) {
                 L[y] = 0;
-                y = gr[u][++j];
+                y = gr[u][++j]; // ustawienie y na kolejnego sąsiada u
             }
            
         }

@@ -2,5 +2,4 @@
 E:\Programming\C++\AiSD\Graphs\Graphs\Graphs.cpp(51,21): warning C4244: 'argument': conversion from 'const ln' to 'const unsigned int', possible loss of data
 E:\Programming\C++\AiSD\Graphs\Graphs\Graphs.cpp(57,36): warning C4244: '=': conversion from 'const ln' to 'ui', possible loss of data
 E:\Programming\C++\AiSD\Graphs\Graphs\Graphs.cpp(189,21): warning C4244: '=': conversion from 'const ln' to 'ui', possible loss of data
-E:\Programming\C++\AiSD\Graphs\Graphs\Graphs.cpp(305,21): warning C4018: '<': signed/unsigned mismatch
   Graphs.vcxproj -> E:\Programming\C++\AiSD\Graphs\x64\Debug\Graphs.exe

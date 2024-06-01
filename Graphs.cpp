@@ -302,17 +302,13 @@ void sortNeighbors(Graph& gr, ui* degrees, const ln& size) {
                     --high;
                 }
             }
-            if (low < numNeighbors - 1) {
-                // Sort the second part (neighbors with degrees >= degree of vertex)
-                mergeSort(gr[i], degrees, low, numNeighbors - 1, true);
-            }
-
+            // Sort the second part (neighbors with degrees >= degree of vertex)
+            mergeSort(gr[i], degrees, low, numNeighbors - 1, true);
         }
     }
 }
 
 ln countC4Subgraphs(Graph& gr, ui* degrees, const ln& V) {
-
     sortNeighbors(gr, degrees, V);
 
     ln count = 0;
@@ -322,29 +318,36 @@ ln countC4Subgraphs(Graph& gr, ui* degrees, const ln& V) {
         ui tempCount = 0;
         for (ui i = 0; i < degrees[v]; ++i) {
             ui u = gr[v][i];
-            if (degrees[u] >= degrees[v]) {
+            if (degrees[u] > degrees[v]) {
                 break;
             }
+            if (degrees[u] == degrees[v] && u >= v) {
+                continue;
+            }
             ui j = 0;
-            ui y = gr[u][j++];
+            ui y = gr[u][j];
             while (y != v) {
-                tempCount += L[y];
-                ++L[y];
-                y = gr[u][j++];
+                tempCount += L[y]++;
+                y = gr[u][++j];
             }
         }
 
         for (ui i = 0; i < degrees[v]; ++i) {
             ui u = gr[v][i];
-            if (degrees[u] >= degrees[v]) {
+            if (degrees[u] > degrees[v]) {
                 break;
             }
+            if (degrees[u] == degrees[v] && u >= v) {
+                continue;
+            }
+            
             ui j = 0;
-            ui y = gr[u][j++];
+            ui y = gr[u][j];
             while (y != v) {
                 L[y] = 0;
-                y = gr[u][j++];
+                y = gr[u][++j];
             }
+           
         }
         count += tempCount;
     }

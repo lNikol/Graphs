@@ -309,13 +309,17 @@ void sortNeighbors(Graph& gr, ui* degrees, const ln& size) {
 }
 
 ln countC4Subgraphs(Graph& gr, ui* degrees, const ln& V) {
+    // zrobiono algorytm 5 ze strony
+    // https://arxiv.org/pdf/2303.06090
+    // Cały opis działania tego algorytmu jest na tej stronie
+
     sortNeighbors(gr, degrees, V);
 
     ln count = 0;
-    ui* L = new ui[V]();
+    unsigned short* L = new unsigned short[V]();
 
     for (ui v = 0; v < V; ++v) {
-        ui tempCount = 0;
+        unsigned short tempCount = 0;
         for (ui i = 0; i < degrees[v]; ++i) {
             ui u = gr[v][i];
             if (degrees[u] > degrees[v]) {

@@ -84,66 +84,100 @@ ui countComponents(Graph& gr, const ln& size, ui* degrees, ui* component_sizes, 
     return components;
 }
 
-void merge(ui* degrees, ui* order, const ln& left, const ln& mid, const ln& right) {
+void merge(ui* degrees, ui* order, const ln& left, const ln& mid, const ln& right, const bool& graf) {
     ln n1 = mid - left + 1;
     ln n2 = right - mid;
 
     ui* L = new ui[n1];
     ui* R = new ui[n2];
-    ui* LOrder = new ui[n1];
-    ui* ROrder = new ui[n2];
 
-    for (ui i = 0; i < n1; ++i) {
-        L[i] = degrees[left + i];
-        LOrder[i] = order[left + i];
-    }
-    for (ui j = 0; j < n2; ++j) {
-        R[j] = degrees[mid + 1 + j];
-        ROrder[j] = order[mid + 1 + j];
-    }
+    if (!graf) {
+        ui* LOrder = new ui[n1];
+        ui* ROrder = new ui[n2];
 
-    ui i = 0, j = 0;
-    ln k = left;
-    while (i < n1 && j < n2) {
-        if (L[i] >= R[j]) {
+        for (ui i = 0; i < n1; ++i) {
+            L[i] = degrees[left + i];
+            LOrder[i] = order[left + i];
+        }
+        for (ui j = 0; j < n2; ++j) {
+            R[j] = degrees[mid + 1 + j];
+            ROrder[j] = order[mid + 1 + j];
+        }
+
+        ui i = 0, j = 0;
+        ln k = left;
+        while (i < n1 && j < n2) {
+            if (L[i] >= R[j]) {
+                degrees[k] = L[i];
+                order[k] = LOrder[i];
+                ++i;
+            }
+            else {
+                degrees[k] = R[j];
+                order[k] = ROrder[j];
+                ++j;
+            }
+            ++k;
+        }
+
+        while (i < n1) {
             degrees[k] = L[i];
             order[k] = LOrder[i];
             ++i;
+            ++k;
         }
-        else {
+
+        while (j < n2) {
             degrees[k] = R[j];
             order[k] = ROrder[j];
             ++j;
+            ++k;
         }
-        ++k;
+       
+        delete[] LOrder;
+        delete[] ROrder;
     }
+    else {
+        // preproccessing
+        // degrees tutaj to lista sąsiadów wierzchołka czyli gr[wierzcholek]
+        // order to degrees
+        for (ui i = 0; i < n1; ++i) {
+            L[i] = degrees[left + i];
+        }
+        for (ui j = 0; j < n2; ++j) {
+            R[j] = degrees[mid + 1 + j];
+        }
 
-    while (i < n1) {
-        degrees[k] = L[i];
-        order[k] = LOrder[i];
-        ++i;
-        ++k;
-    }
+        ui i = 0, j = 0;
+        ln k = left;
+        while (i < n1 && j < n2) {
+            if (order[L[i]] < order[R[j]] ||
+                (order[L[i]] == order[R[j]] && L[i] < R[j])) {
+                degrees[k++] = L[i++];
+            }
+            else {
+                degrees[k++] = R[j++];
+            }
+        }
 
-    while (j < n2) {
-        degrees[k] = R[j];
-        order[k] = ROrder[j];
-        ++j;
-        ++k;
+        while (i < n1) {
+            degrees[k++] = L[i++];
+        }
+        while (j < n2) {
+            degrees[k++] = R[j++];
+        }
     }
 
     delete[] L;
     delete[] R;
-    delete[] LOrder;
-    delete[] ROrder;
 }
 
-void mergeSort(ui* degrees, ui* order, const ln& left, const ln& right) {
+void mergeSort(ui* degrees, ui* order, const ln& left, const ln& right, const bool& graf) {
     if (left < right) {
         ln mid = left + (right - left) / 2;
-        mergeSort(degrees, order, left, mid);
-        mergeSort(degrees, order, mid + 1, right);
-        merge(degrees, order, left, mid, right);
+        mergeSort(degrees, order, left, mid, graf);
+        mergeSort(degrees, order, mid + 1, right, graf);
+        merge(degrees, order, left, mid, right, graf);
     }
 }
 
@@ -243,50 +277,81 @@ void greedyColoring(Graph& gr, ui* order, ui* result, const char& method, const 
 }
 
 // dodać konetarze w C4 i innych fragmentach kodu, usunąć stare i zbędne komentarze
-ln countC4Subgraphs(const Graph& gr, const ui* degrees, const ln& V) {
-    ln count = 0;
 
-    // Iteracja po wszystkich wierzchołkach
-    for (ui u = 0; u < V; ++u) {
-        ui tempCount = 0;
-        if (degrees[u] <= 1) {
-            continue;
-        }
+void mySwap(ui& a, ui& b) {
+    ui temp = a;
+    a = b;
+    b = temp;
+}
 
-        // Iteracja po sąsiadach wierzchołka u
-        for (ui i = 0; i < degrees[u]; ++i) {
-            // v - pierwszy sąsiad u
-            ui v = gr[u][i];
-            if (degrees[v] <= 1) {
-                continue;
+void sortNeighbors(Graph& gr, ui* degrees, const ln& size) {
+    for (ui i = 0; i < size; ++i) {
+        if (degrees[i] > 1) {
+            ui numNeighbors = degrees[i];
+            int low = 0, high = numNeighbors - 1;
+            while (low <= high) {
+                if (degrees[gr[i][low]] < numNeighbors) {
+                    ++low;
+                }
+                else if (degrees[gr[i][high]] >= numNeighbors) {
+                    --high;
+                }
+                else {
+                    mySwap(gr[i][low], gr[i][high]);
+                    ++low;
+                    --high;
+                }
+            }
+            if (low < numNeighbors - 1) {
+                // Sort the second part (neighbors with degrees >= degree of vertex)
+                mergeSort(gr[i], degrees, low, numNeighbors - 1, true);
             }
 
-            for (ui j = i + 1; j < degrees[u]; ++j) {
-                // w - drugi sąsiad u
-                ui w = gr[u][j];
-                if (degrees[w] <= 1) {
-                    continue;
-                }
-                ui t1 = 0, t2 = 0;
-                while (t1 < degrees[v] && t2 < degrees[w]) {
-                    if (gr[v][t1] == gr[w][t2]) {
-                        ++tempCount;
-                        ++t1;
-                        ++t2;
-                    }
-                    else if (gr[v][t1] < gr[w][t2]) {
-                        ++t1;
-                    }
-                    else {
-                        ++t2;
-                    }
-                }
+        }
+    }
+}
+
+ln countC4Subgraphs(Graph& gr, ui* degrees, const ln& V) {
+
+    sortNeighbors(gr, degrees, V);
+
+    ln count = 0;
+    ui* L = new ui[V]();
+
+    for (ui v = 0; v < V; ++v) {
+        ui tempCount = 0;
+        for (ui i = 0; i < degrees[v]; ++i) {
+            ui u = gr[v][i];
+            if (degrees[u] >= degrees[v]) {
+                break;
+            }
+            ui j = 0;
+            ui y = gr[u][j++];
+            while (y != v) {
+                tempCount += L[y];
+                ++L[y];
+                y = gr[u][j++];
+            }
+        }
+
+        for (ui i = 0; i < degrees[v]; ++i) {
+            ui u = gr[v][i];
+            if (degrees[u] >= degrees[v]) {
+                break;
+            }
+            ui j = 0;
+            ui y = gr[u][j++];
+            while (y != v) {
+                L[y] = 0;
+                y = gr[u][j++];
             }
         }
         count += tempCount;
     }
 
-    return count / 2; // Każdy cykl C4 jest liczony 4 razy
+    delete[] L;
+    
+    return count;
 }
 
 int main()
@@ -320,7 +385,7 @@ int main()
         }
 
         // 1. DEGREE
-        mergeSort(degrees_for_sort, order_for_sort, 0, edge_numbers - 1);
+        mergeSort(degrees_for_sort, order_for_sort, 0, edge_numbers - 1, false);
         for (ui k = 0; k < edge_numbers; ++k) {
             printf("%u ", degrees_for_sort[k]);
         }

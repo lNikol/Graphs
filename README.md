@@ -1,6 +1,4 @@
-Graphs and stuff like that
-
-Graphs are an important data structure used in computer science. The task is to load graphs and determine the following parameters:
+ Graphs are an important data structure used in computer science. The task is to load graphs and determine the following parameters:
 
     the degree sequence;
     the number of components;
@@ -29,4 +27,4 @@ You should print k sets of responses. Each set should contain the designated par
 Optionality
 Only points (parameters) 1 and 2 are required. If any of the point is not implemented, please enter a single '?' character as the output.
 Score for a graph parameter will only be included if this parameter is correctly determined in each data set.
-The score for each parameter is 10% of the total score. 
+The score for each parameter is 10% of the total score.

@@ -21,27 +21,6 @@ void List::push_back(const unsigned int& t) {
 	++size;
 }
 
-//void List::pop_back() {
-//	if (first == nullptr) {
-//		return;
-//	}
-//	--size;
-//	// usuwam pierwszy (on jest ostatnim) element z listy
-//	if (first->next == nullptr) {
-//		delete first;
-//		first = nullptr;
-//		last = nullptr;
-//		return;
-//	}
-//
-//	Node* tmp = last->prev;
-//	delete last;
-//	last = tmp;
-//	if (last != nullptr) {
-//		last->next = nullptr;
-//	}
-//}
-
 void List::deleteFirst() {
 	if (first == nullptr) {
 		return;
@@ -67,15 +46,6 @@ unsigned int List::getSize() const {
 Node* List::begin() {
 	return first;
 }
-
-//Node* List::end() {
-//	if (last == nullptr) {
-//		return nullptr;
-//	}
-//	else {
-//		return last;
-//	}
-//}
 
 List::~List() {
 	Node* cur = first;

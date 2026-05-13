@@ -8,9 +8,7 @@ public:
 	unsigned int getSize() const;
 	List();
 	Node* begin();
-//	Node* end();
 	void push_back(const unsigned int& t);
 	void deleteFirst();
-//	void pop_back();
 	~List();
 };
